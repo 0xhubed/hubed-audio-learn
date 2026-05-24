@@ -1,0 +1,53 @@
+{
+  "topic": "Kalman filters",
+  "language": "en",
+  "target_length": "medium",
+  "audience_assumed": "ML engineer comfortable with linear algebra",
+  "learning_objectives": [
+    "Build intuition for the prediction-correction loop",
+    "Read the matrix form without panic"
+  ],
+  "sections": [
+    {
+      "id": "intro",
+      "title": "Why Kalman filters exist",
+      "summary": "Motivate with a sensor-fusion example.",
+      "key_claims": [
+        {
+          "text": "Sensors are noisy; combining estimates beats either alone.",
+          "sources": ["wikipedia:Kalman_filter#History"]
+        }
+      ],
+      "examples": [
+        {"kind": "scenario", "body": "A car estimating its position from GPS and a wheel encoder."}
+      ],
+      "figures": [
+        {
+          "id": "fig-scenario-car",
+          "kind": "diagram",
+          "caption": "Car position estimated from GPS + wheel encoder"
+        }
+      ]
+    },
+    {
+      "id": "prediction",
+      "title": "The prediction step",
+      "summary": "Propagate state forward in time.",
+      "key_claims": [
+        {"text": "We propagate the mean by the dynamics model.", "sources": []}
+      ],
+      "examples": [],
+      "figures": [
+        {
+          "id": "fig-predict",
+          "kind": "math-block",
+          "latex": "\\hat{x}_{k|k-1} = F_k \\hat{x}_{k-1|k-1} + B_k u_k",
+          "caption": "State propagation"
+        }
+      ]
+    }
+  ],
+  "sources_used": [
+    {"id": "wikipedia:Kalman_filter", "url": "https://en.wikipedia.org/wiki/Kalman_filter", "title": "Kalman filter — Wikipedia"}
+  ]
+}

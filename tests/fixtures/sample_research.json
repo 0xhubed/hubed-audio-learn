@@ -1,0 +1,14 @@
+{
+  "topic": "Kalman filters",
+  "user_prompt": "Explain intuitively, then go deep into the math.",
+  "user_docs": [],
+  "web_sources": [
+    {
+      "url": "https://en.wikipedia.org/wiki/Kalman_filter",
+      "title": "Kalman filter — Wikipedia",
+      "fetched_at": "2026-05-23T10:14:00Z",
+      "content": "The Kalman filter is an algorithm..."
+    }
+  ],
+  "search_queries_used": ["Kalman filter intuition", "Kalman filter prediction step"]
+}

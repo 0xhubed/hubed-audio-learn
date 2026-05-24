@@ -1,0 +1,10 @@
+{
+  "outline_ref": "outline.json",
+  "host_a": {"name": "Alex", "voice_id": "gemini:Charon", "persona": "curious-host"},
+  "host_b": {"name": "Sam", "voice_id": "gemini:Leda", "persona": "explainer"},
+  "turns": [
+    {"speaker": "A", "text": "So today we're tackling Kalman filters.", "section_ref": "intro", "slide_marker": null},
+    {"speaker": "B", "text": "Right — imagine a car estimating its position from GPS and a wheel encoder.", "section_ref": "intro", "slide_marker": {"figure_id": "fig-scenario-car", "cue": "soft"}},
+    {"speaker": "A", "text": "And the prediction step propagates state forward.", "section_ref": "prediction", "slide_marker": {"figure_id": "fig-predict", "cue": "soft"}}
+  ]
+}
