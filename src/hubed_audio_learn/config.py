@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Config(BaseModel):
@@ -14,8 +14,8 @@ class Config(BaseModel):
     gemini_api_key: str = ""
     llm_provider: str = "claude"
     tts_provider: str = "gemini"
-    output_dir: Path = Path("./output").resolve()
-    work_dir: Path = Path("./.work").resolve()
+    output_dir: Path = Field(default_factory=lambda: Path("./output").resolve())
+    work_dir: Path = Field(default_factory=lambda: Path("./.work").resolve())
 
     host_a_name: str = "Alex"
     host_a_voice: str = "Charon"
