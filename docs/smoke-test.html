@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>hubed-audio-learn — Phase 1 smoke test</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root {
+    --fg: #1f2328;
+    --muted: #57606a;
+    --bg: #ffffff;
+    --panel: #f6f8fa;
+    --border: #d0d7de;
+    --link: #0969da;
+    --accent: #1a7f37;
+    --warn: #9a6700;
+    --danger: #cf222e;
+    --code-bg: #f6f8fa;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fg: #e6edf3;
+      --muted: #9198a1;
+      --bg: #0d1117;
+      --panel: #161b22;
+      --border: #30363d;
+      --link: #58a6ff;
+      --accent: #3fb950;
+      --warn: #d29922;
+      --danger: #f85149;
+      --code-bg: #161b22;
+    }
+  }
+  html, body { background: var(--bg); color: var(--fg); }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55;
+    margin: 0;
+    padding: 32px 24px 64px 24px;
+    max-width: 820px;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 16px;
+  }
+  h1 { font-size: 1.8em; margin: 0 0 4px 0; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  .subtitle { color: var(--muted); margin-bottom: 28px; }
+  h2 { font-size: 1.25em; margin-top: 36px; padding-top: 12px; border-top: 1px solid var(--border); }
+  h2 .num {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    text-align: center;
+    border-radius: 50%;
+    background: var(--panel);
+    color: var(--muted);
+    font-size: 0.8em;
+    margin-right: 10px;
+    vertical-align: middle;
+  }
+  code {
+    background: var(--code-bg);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.45;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  ul.checklist { list-style: none; padding: 0; }
+  ul.checklist > li {
+    margin: 14px 0;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--panel);
+    transition: opacity .2s ease;
+  }
+  ul.checklist > li.done {
+    opacity: 0.5;
+    background: transparent;
+  }
+  ul.checklist > li.done .step-title { text-decoration: line-through; }
+  .step-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+  }
+  .step-head input[type=checkbox] {
+    transform: scale(1.2);
+    margin-top: 4px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+  .step-title { font-weight: 600; }
+  .step-body { margin-top: 8px; margin-left: 28px; }
+  .step-body p { margin: 6px 0; }
+  .step-body pre { margin: 8px 0; }
+  .note {
+    border-left: 3px solid var(--warn);
+    padding: 6px 10px;
+    margin: 8px 0;
+    background: var(--panel);
+    color: var(--muted);
+    font-size: 0.92em;
+  }
+  .note.danger { border-left-color: var(--danger); }
+  .note.ok { border-left-color: var(--accent); }
+  .note strong { color: var(--fg); }
+  .progress {
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 0;
+    margin: -32px -24px 24px -24px;
+    padding-left: 24px;
+    padding-right: 24px;
+    font-size: 0.9em;
+    color: var(--muted);
+    z-index: 10;
+  }
+  .progress-bar {
+    height: 4px;
+    background: var(--panel);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 6px;
+  }
+  .progress-bar > span {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width .25s ease;
+  }
+  .reset {
+    float: right;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 4px;
+    padding: 2px 8px;
+    cursor: pointer;
+    font-size: 0.85em;
+  }
+  .reset:hover { color: var(--danger); border-color: var(--danger); }
+  a { color: var(--link); }
+</style>
+</head>
+<body>
+
+<div class="progress">
+  <button class="reset" id="reset">Reset</button>
+  <span id="progress-text">0 of 0 done</span>
+  <div class="progress-bar"><span id="progress-fill"></span></div>
+</div>
+
+<h1>Phase 1 smoke test</h1>
+<div class="subtitle">First end-to-end live run of <code>audio-learn podcast</code> against real Claude + Gemini.<br>
+Checkbox state is saved to localStorage — close the tab and come back.</div>
+
+<h2><span class="num">1</span>Install system prerequisites</h2>
+<ul class="checklist">
+  <li data-id="prereq-python">
+    <label class="step-head">
+      <input type="checkbox">
+      <span class="step-title">Python 3.11 or newer is on PATH</span>
+    </label>
+    <div class="step-body">
+      <pre>python3 --version   # expect 3.11+</pre>
+      <p>If your default <code>python3</code> is older (macOS often ships 3.9), use a newer one explicitly: <code>python3.13 -m venv .venv</code>.</p>
+    </div>
+  </li>
+  <li data-id="prereq-ffmpeg">
+    <label class="step-head">
+      <input type="checkbox">
+      <span class="step-title">Install <code>ffmpeg</code></span>
+    </label>
+    <div class="step-body">
+      <pre>brew install ffmpeg          # macOS
+sudo apt install ffmpeg      # Debian/Ubuntu
+which ffmpeg                 # confirm on PATH</pre>
+      <p><code>pydub</code> uses <code>ffmpeg</code> to encode PCM to MP3. Without it the TTS stage will fail at the encode step.</p>
+    </div>
+  </li>
+  <li data-id="prereq-claude">
+    <label class="step-head">
+      <input type="checkbox">
+      <span class="step-title">Claude Code CLI is on PATH</span>
+    </label>
+    <div class="step-body">
+      <pre>which claude
+claude --version</pre>
+      <p>The research stage shells out to <code>claude --print --allowedTools WebFetch,WebSearch,Read</code>.
+      Install instructions: <a href="https://docs.anthropic.com/claude/docs/claude-code">docs.anthropic.com/claude/docs/claude-code</a>.</p>
+    </div>
+  </li>
+  <li data-id="prereq-gemini-key">
+    <label class="step-head">
+      <input type="checkbox">
+      <span class="step-title">Have a Gemini API key ready</span>
+    </label>
+    <div class="step-body">
+      <p>Get one at <a href="https://aistudio.google.com/apikey">aistudio.google.com/apikey</a> (free tier is fine for one smoke run).</p>
+    </div>
+  </li>
+</ul>
+
+<h2><span class="num">2</span>Set up the repo</h2>
+<ul class="checklist">
+  <li data-id="setup-clone">
+    <label class="step-head">
+      <input type="checkbox">
+      <span class="step-title">Working tree on <code>main</code>, clean, deps installed</span>
+    </label>
+    <div class="step-body">
+      <pre>cd ~/Documents/projects/hubed-audio-learn
+git status                   # should be clean, on main
+source .venv/bin/activate    # venv from Task 1
+pip install -e ".[dev]"      # idempotent — no-op if already installed</pre>
+    </div>
+  </li>
+  <li data-id="setup-env">
+    <label class="step-head">
+      <input type="checkbox">
+      <span class="step-title">Create <code>.env</code> with your Gemini key</span>
+    </label>
+    <div class="step-body">
+      <pre>cp .env.example .env
+# edit .env — at minimum set:
+#   GEMINI_API_KEY=&lt;your key&gt;
+# optionally point OUTPUT_DIR at your Syncthing/Obsidian folder:
+#   OUTPUT_DIR=~/Podcasts/</pre>
+      <div class="note danger"><strong>Never commit <code>.env</code>.</strong> It's gitignored, but if you use <code>direnv</code>, do not create <code>.envrc</code> with secrets either — <code>.envrc</code> is currently <em>not</em> in <code>.gitignore</code> (see review item #2).</div>
+    </div>
+  </li>
+</ul>
+
+<h2><span class="num">3</span>Verify configuration with <code>doctor</code></h2>
+<ul class="checklist">
+  <li data-id="doctor">
+    <label class="step-head">
+      <input type="checkbox">
+      <span class="step-title">Run <code>audio-learn doctor</code> — all green</span>
+    </label>
+    <div class="step-body">
+      <pre>audio-learn doctor</pre>
+      <p>Expected output:</p>
+      <pre>audio-learn version: 0.1.0
+LLM provider:        claude
+TTS provider:        gemini
+OUTPUT_DIR:          /abs/path/output
+WORK_DIR:            /abs/path/.work
+GEMINI_API_KEY: set
+claude binary: /opt/homebrew/bin/claude   (or similar)
+ffmpeg: /opt/homebrew/bin/ffmpeg          (or similar)</pre>
+      <p>Exit code should be 0. If any line shows <code>MISSING</code> or <code>NOT FOUND</code>, fix that before continuing — those checks have to pass for the live run to succeed.</p>
+    </div>
+  </li>
+</ul>
+
+<h2><span class="num">4</span>Run the smoke episode</h2>
+<ul class="checklist">
+  <li data-id="run-podcast">
+    <label class="step-head">
+      <input type="checkbox">
+      <span class="step-title">Generate a short Kalman-filters episode</span>
+    </label>
+    <div class="step-body">
+      <pre>audio-learn podcast "Kalman filters" --length short</pre>
+      <p>Why <code>short</code>: ~1200 words, ~5–8 minutes of audio. Cheaper to fail fast on the first run; switch to <code>medium</code> later once it works end-to-end.</p>
+      <p>You should see JSONL lines on stdout from each stage, e.g.:</p>
+      <pre>{"ts":..., "stage":"research", "event":"start", ...}
+{"ts":..., "stage":"research", "event":"done", "data":{"elapsed_seconds":42.1}}
+{"ts":..., "stage":"outline", "event":"start", ...}
+...
+Done. Manifest: /abs/path/output/2026-05-24-kalman-filters.manifest.json</pre>
+      <p>Total wall time on a first run: ~2–5 minutes (research is the slowest, ~30–90s; TTS is the next slowest).</p>
+      <div class="note"><strong>If <code>research stage failed after 2 attempts</code>:</strong> this is review finding #3 (Claude wraps JSON in markdown fences). Workaround: edit <code>src/hubed_audio_learn/providers/llm/claude.py:43</code> to strip leading/trailing ```json fences before returning, or just open <code>docs/review-2026-05-24.md</code> §3 for the fix.</div>
+      <div class="note"><strong>If a stage hangs longer than 10 minutes:</strong> Ctrl-C, check stdout/stderr, and look in <code>./.work/&lt;episode_id&gt;/</code> for the last successfully-written JSON. The pipeline isn't resumable in Phase 1, so you'll restart from scratch.</div>
+    </div>
+  </li>
+</ul>
+
+<h2><span class="num">5</span>Inspect the artifacts</h2>
+<ul class="checklist">
+  <li data-id="files-present">
+    <label class="step-head">
+      <input type="checkbox">
+      <span class="step-title">All 5 output files exist in <code>OUTPUT_DIR</code></span>
+    </label>
+    <div class="step-body">
+      <pre>ls -la output/   # or your $OUTPUT_DIR</pre>
+      <p>Expect:</p>
+      <pre>2026-05-24-kalman-filters.mp3
+2026-05-24-kalman-filters.html
+2026-05-24-kalman-filters.transcript.md
+2026-05-24-kalman-filters.outline.json
+2026-05-24-kalman-filters.manifest.json</pre>
+    </div>
+  </li>
+  <li data-id="mp3-plays">
+    <label class="step-head">
+      <input type="checkbox">
+      <span class="step-title">MP3 plays and contains two distinct voices</span>
+    </label>
+    <div class="step-body">
+      <pre>open output/2026-05-24-kalman-filters.mp3   # macOS
+xdg-open output/...mp3                       # Linux</pre>
+      <p>Listen to 30s. You should hear Alex (curious) and Sam (explainer) alternating, no chopping, no garbled audio.</p>
+    </div>
+  </li>
+  <li data-id="html-syncs">
+    <label class="step-head">
+      <input type="checkbox">
+      <span class="step-title">HTML player highlights the right slide as the audio plays</span>
+    </label>
+    <div class="step-body">
+      <pre>open output/2026-05-24-kalman-filters.html</pre>
+      <p>Play the audio. As each slide marker triggers, the corresponding box should get a blue border and scroll into view. Math figures should render via KaTeX (e.g., <code>x̂_{k|k-1} = F_k x̂_{k-1|k-1} + B_k u_k</code>).</p>
+      <p>Click any slide — the audio should seek to that slide's first appearance.</p>
+      <div class="note"><strong>If slide-cue timing drifts:</strong> this is review finding #6 (silence-detection fallback). Open <code>./.work/&lt;episode_id&gt;/timing.json</code> and eyeball whether the <code>start_seconds</code> values look reasonable vs. the actual audio.</div>
+    </div>
+  </li>
+  <li data-id="transcript-readable">
+    <label class="step-head">
+      <input type="checkbox">
+      <span class="step-title">Transcript is readable and timestamps look right</span>
+    </label>
+    <div class="step-body">
+      <pre>less output/2026-05-24-kalman-filters.transcript.md</pre>
+      <p>Each block: <code>[mm:ss] Host:</code> line followed by the turn text. Timestamps should be monotonically increasing.</p>
+    </div>
+  </li>
+  <li data-id="manifest-sensible">
+    <label class="step-head">
+      <input type="checkbox">
+      <span class="step-title">Manifest looks sane</span>
+    </label>
+    <div class="step-body">
+      <pre>cat output/2026-05-24-kalman-filters.manifest.json | python -m json.tool</pre>
+      <p>Sanity-check: <code>topic</code>, <code>providers: {llm: "claude", tts: "gemini"}</code>, <code>turn_count</code> &gt; 0, <code>stage_durations_seconds</code> for each of the 6 stages, at least one entry in <code>sources</code> (Claude found web sources during research).</p>
+    </div>
+  </li>
+</ul>
+
+<h2><span class="num">6</span>Mobile delivery (optional)</h2>
+<ul class="checklist">
+  <li data-id="mobile-sync">
+    <label class="step-head">
+      <input type="checkbox">
+      <span class="step-title">Episode appears on phone via sync folder</span>
+    </label>
+    <div class="step-body">
+      <p>If <code>OUTPUT_DIR</code> is inside a Syncthing or Obsidian-Sync folder, wait 30–60s and check the phone. The 5 files should be there.</p>
+      <p>Play the HTML on the phone (any browser) — same slide-sync behavior should work.</p>
+    </div>
+  </li>
+</ul>
+
+<h2><span class="num">7</span>What to do with what you learn</h2>
+<ul class="checklist">
+  <li data-id="capture-issues">
+    <label class="step-head">
+      <input type="checkbox">
+      <span class="step-title">Note any rough edges for Phase 2</span>
+    </label>
+    <div class="step-body">
+      <p>Things that are most likely to bite first (from the code review at <code>docs/review-2026-05-24.md</code>):</p>
+      <ol>
+        <li>Claude code-fence wrapping — if you hit it, file the patch from review §3.</li>
+        <li>Slide-sync drift — note where in the audio it drifts and by how many seconds. Useful for review §6.</li>
+        <li>Gemini cryptic errors — if TTS crashed with an <code>IndexError</code>, that's review §4. Capture the response shape.</li>
+        <li>Re-run overwrite — if you re-ran the same topic the same day, the first episode is gone (review §5).</li>
+      </ol>
+      <p>If the smoke run worked cleanly, Phase 2 planning can prioritize features (PDF mode, OSS providers, Telegram bot) over the hardening items.</p>
+    </div>
+  </li>
+</ul>
+
+<script>
+(function () {
+  const items = document.querySelectorAll('ul.checklist > li');
+  const fill = document.getElementById('progress-fill');
+  const text = document.getElementById('progress-text');
+  const KEY = 'hubed-smoke-test-v1';
+
+  let state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) {}
+
+  function refresh() {
+    let done = 0;
+    items.forEach(li => {
+      const id = li.dataset.id;
+      const cb = li.querySelector('input[type=checkbox]');
+      cb.checked = !!state[id];
+      li.classList.toggle('done', cb.checked);
+      if (cb.checked) done++;
+    });
+    const total = items.length;
+    text.textContent = `${done} of ${total} done`;
+    fill.style.width = total ? `${(done / total) * 100}%` : '0%';
+  }
+
+  items.forEach(li => {
+    const id = li.dataset.id;
+    const cb = li.querySelector('input[type=checkbox]');
+    cb.addEventListener('change', () => {
+      state[id] = cb.checked;
+      localStorage.setItem(KEY, JSON.stringify(state));
+      refresh();
+    });
+    // Clicking anywhere on the head toggles
+    li.querySelector('.step-head').addEventListener('click', (e) => {
+      if (e.target !== cb) {
+        cb.checked = !cb.checked;
+        cb.dispatchEvent(new Event('change'));
+        e.preventDefault();
+      }
+    });
+  });
+
+  document.getElementById('reset').addEventListener('click', () => {
+    if (!confirm('Reset all checkboxes?')) return;
+    state = {};
+    localStorage.removeItem(KEY);
+    refresh();
+  });
+
+  refresh();
+})();
+</script>
+</body>
+</html>
