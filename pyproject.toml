@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hubed-audio-learn"
+version = "0.1.0"
+description = "Generate two-host conversational podcasts and primers from a topic, documents, or a prompt."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Daniel Huber" }]
+dependencies = [
+    "pydantic>=2.5",
+    "python-dotenv>=1.0",
+    "jinja2>=3.1",
+    "python-slugify>=8.0",
+    "google-genai>=0.3.0",
+    "pypdf>=4.0",
+    "pydub>=0.25.1",
+    "librosa>=0.10",
+    "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+]
+
+[project.scripts]
+audio-learn = "hubed_audio_learn.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+hubed_audio_learn = ["prompts/*.txt", "templates/html/*.j2", "templates/html/vendor/*"]
+
+[tool.pytest.ini_options]
+markers = [
+    "provider: tests that hit real LLM/TTS providers (cost ~$0.01, skipped by default)",
+    "e2e: end-to-end smoke tests (manual trigger only)",
+]
+addopts = "-m 'not provider and not e2e'"
+testpaths = ["tests"]
