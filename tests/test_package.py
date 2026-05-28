@@ -46,6 +46,24 @@ def test_run_package_moves_artifacts_with_dated_names(tmp_work_dir: Path, tmp_ou
     assert manifest is not None
 
 
+def test_run_package_does_not_clobber_existing_episode(tmp_work_dir: Path, tmp_output_dir: Path, load_fixture):
+    _seed_work_dir(tmp_work_dir, load_fixture)
+    common = dict(
+        work_dir=tmp_work_dir,
+        output_dir=tmp_output_dir,
+        topic="Kalman filters",
+        date_str="2026-05-23",
+        providers={"llm": "claude", "tts": "gemini"},
+        stage_durations={},
+    )
+    run_package(**common)
+    run_package(**common)  # same day, same topic — must not overwrite the first
+
+    names = sorted(p.name for p in tmp_output_dir.iterdir())
+    assert "2026-05-23-kalman-filters.mp3" in names
+    assert "2026-05-23-kalman-filters-2.mp3" in names
+
+
 def test_run_package_html_audio_src_points_to_renamed_mp3(tmp_work_dir: Path, tmp_output_dir: Path, load_fixture):
     _seed_work_dir(tmp_work_dir, load_fixture)
     # html_render wrote src="episode.mp3" — packaging should rewrite to the final name

@@ -40,6 +40,38 @@ def test_generate_with_allowed_tools_adds_flag():
     assert cmd[idx + 1] == "WebFetch,WebSearch,Read"
 
 
+def test_generate_strips_json_code_fence():
+    provider = ClaudeProvider(binary="claude")
+    fake = _FakeCompleted(stdout='```json\n{"a": 1}\n```\n')
+    with patch("hubed_audio_learn.providers.llm.claude.subprocess.run", return_value=fake):
+        out = provider.generate("give me json")
+    assert out == '{"a": 1}'
+
+
+def test_generate_strips_bare_code_fence():
+    provider = ClaudeProvider(binary="claude")
+    fake = _FakeCompleted(stdout='```\n{"a": 1}\n```')
+    with patch("hubed_audio_learn.providers.llm.claude.subprocess.run", return_value=fake):
+        out = provider.generate("give me json")
+    assert out == '{"a": 1}'
+
+
+def test_generate_leaves_unfenced_output_untouched():
+    provider = ClaudeProvider(binary="claude")
+    fake = _FakeCompleted(stdout='{"a": 1}\n')
+    with patch("hubed_audio_learn.providers.llm.claude.subprocess.run", return_value=fake):
+        out = provider.generate("give me json")
+    assert out == '{"a": 1}'
+
+
+def test_generate_uses_utf8_encoding():
+    provider = ClaudeProvider(binary="claude")
+    fake = _FakeCompleted(stdout="ok")
+    with patch("hubed_audio_learn.providers.llm.claude.subprocess.run", return_value=fake) as run:
+        provider.generate("em—dash and café")
+    assert run.call_args.kwargs["encoding"] == "utf-8"
+
+
 def test_generate_raises_on_nonzero_exit():
     provider = ClaudeProvider(binary="claude")
     fake = _FakeCompleted(stdout="", stderr="boom", returncode=2)

@@ -4,7 +4,7 @@ A standalone learning-artifact generator. Given a topic, documents, or a prompt,
 
 ## Status
 
-**Pre-implementation, spec stage.** No code yet. Design is finalized; next step is to write an implementation plan for the Phase 1 MVP and start building.
+**Phase 1 MVP implemented; not yet run live.** The full podcast pipeline exists under `src/hubed_audio_learn/` (research → outline → script → tts → html_render → package), plus the `audio-learn` CLI (`podcast`/`version`/`doctor`). 42 unit tests pass (`pytest`); real-provider/e2e tests are gated behind the `provider` and `e2e` markers and have **not** been run — no stage has been exercised against a live Claude/Gemini call. The implementation plan is at [docs/superpowers/plans/2026-05-24-phase1-mvp.md](docs/superpowers/plans/2026-05-24-phase1-mvp.md).
 
 ## Canonical reference
 
@@ -36,4 +36,6 @@ Phase 1 success criterion: from a fresh checkout, `pip install -e .`, set `GEMIN
 
 ## Next step
 
-Invoke the `superpowers:writing-plans` skill against the design spec to produce a step-by-step implementation plan for Phase 1.
+Run the Phase 1 success criterion live: from a fresh checkout, `pip install -e .`, set `GEMINI_API_KEY`, run `audio-learn podcast "Kalman filters" --length medium`, and confirm a synced MP3 + HTML lands in `OUTPUT_DIR` with audio↔slide sync working. `docs/smoke-test.md` is the checklist for that run.
+
+Open code-review findings are tracked in [docs/review-2026-05-24.md](docs/review-2026-05-24.md). The High/cheap items #1 (`.envrc` gitignore), #3 (Claude markdown-fence stripping), #5 (no-clobber on re-run), and #9 (UTF-8 subprocess encoding) are **done**. Remaining deferred items: #2 (`</script>` escaping in the HTML template), #4 (Gemini response guards), #6 (fragile silence-detection timing), #7 (script↔outline referential integrity), #8 (`audio_duration_estimate_seconds` mislabel), #10 (fragile HTML `src` rewrite).

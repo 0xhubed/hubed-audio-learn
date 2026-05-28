@@ -12,6 +12,21 @@ from slugify import slugify
 from hubed_audio_learn.schemas import Outline, Script, Timing
 
 
+def _free_base(output_dir: Path, base: str) -> str:
+    """Return `base`, or `base-2`, `base-3`, … — the first that has no `.mp3` yet.
+
+    Filenames are deterministic (`<date>-<slug>`), so a same-day same-topic re-run
+    would otherwise clobber a prior good episode. Since OUTPUT_DIR is typically a
+    Syncthing/Obsidian-synced folder, that delete would propagate to the phone.
+    """
+    if not (output_dir / f"{base}.mp3").exists():
+        return base
+    n = 2
+    while (output_dir / f"{base}-{n}.mp3").exists():
+        n += 1
+    return f"{base}-{n}"
+
+
 def _format_timestamp(seconds: float) -> str:
     total = int(seconds)
     return f"{total // 60:02d}:{total % 60:02d}"
@@ -79,7 +94,7 @@ def run_package(
     output_dir.mkdir(parents=True, exist_ok=True)
     date_str = date_str or date.today().isoformat()
     slug = slugify(topic)
-    base = f"{date_str}-{slug}"
+    base = _free_base(output_dir, f"{date_str}-{slug}")
 
     outline = Outline.model_validate_json((work_dir / "outline.json").read_text(encoding="utf-8"))
     script = Script.model_validate_json((work_dir / "script.json").read_text(encoding="utf-8"))
